@@ -1,5 +1,6 @@
 package com.pl.app;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -24,10 +25,9 @@ import com.pl.app.views.StickyLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements ExpandableListView.OnChildClickListener, ExpandableListView.OnGroupClickListener,
+public class MainActivity extends Activity implements ExpandableListView.OnChildClickListener, ExpandableListView.OnGroupClickListener,
         PinnedHeaderExpandableListView.OnHeaderUpdateListener, StickyLayout.OnQuitTouchEventListener {
     private PinnedHeaderExpandableListView expandableListView;
-    private StickyLayout stickyLayout;
     private ArrayList<Department> departments;
     private ArrayList<List<Staff>> childList;
     private MyExpandableAdapter adapter;
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements ExpandableListVie
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
         expandableListView = (PinnedHeaderExpandableListView) findViewById(R.id.expandablelist);
-        stickyLayout = (StickyLayout)findViewById(R.id.sticky_layout);
+        StickyLayout stickyLayout = (StickyLayout) findViewById(R.id.sticky_layout);
         initData();
 
         adapter = new MyExpandableAdapter(this);
