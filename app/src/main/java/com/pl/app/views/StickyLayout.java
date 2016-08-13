@@ -148,7 +148,7 @@ public class StickyLayout extends LinearLayout{
                 break;
             case MotionEvent.ACTION_UP:
                 int destHeight;
-                if (mHeaderHeight < mOriginalHeaderHeight << 1) {
+                if (mHeaderHeight <= mOriginalHeaderHeight * 0.5) {
                     destHeight = 0;
                     mStatus = STATUS_COLLAPSED;
                 } else {

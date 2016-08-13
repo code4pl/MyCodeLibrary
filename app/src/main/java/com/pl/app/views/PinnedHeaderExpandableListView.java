@@ -125,7 +125,6 @@ public class PinnedHeaderExpandableListView extends ExpandableListView implement
                 mTouchTarget = getTouchTarget(mHeaderView, x, y);
                 mActionDownHappened = true;
             } else if (ev.getAction() == MotionEvent.ACTION_UP) {
-                //TODO
                 View target = getTouchTarget(mHeaderView, x, y);
                 if (target == mTouchTarget && target.isClickable()) {
                     target.performClick();

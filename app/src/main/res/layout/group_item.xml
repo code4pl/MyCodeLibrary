@@ -6,10 +6,9 @@
     android:background="@drawable/selector_group">
     <TextView
         android:id="@+id/group"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:text="人力资源部" />
+        android:layout_centerVertical="true" />
 
     <ImageView
         android:id="@+id/image"
