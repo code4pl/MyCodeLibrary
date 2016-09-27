@@ -38,6 +38,3 @@ captures/
 
 # Keystore files
 *.jks
-
-# IDE properties
-.idea/
