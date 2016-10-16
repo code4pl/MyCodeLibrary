@@ -8,11 +8,8 @@ import java.util.Set;
 
 public class SharedPreferenceUtil {
 	private static final String SHARED_PREFERENCE_NAME = "ali_sp";
-	
 	public static final String VERSION_CODE = "app_version_code";
 
-	public static final String SP_KEY_DEFAULT_SMS = "default_sms";
-	
 	public static void putString(Context context, String key, String value) {
 		SharedPreferences sharedPreferences = context.getSharedPreferences(
 				SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);

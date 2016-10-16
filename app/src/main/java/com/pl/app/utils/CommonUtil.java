@@ -1,19 +1,10 @@
 package com.pl.app.utils;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Dialog;
-import android.app.LauncherActivity;
 import android.app.SearchManager;
-import android.app.WallpaperManager;
-import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -24,50 +15,31 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffColorFilter;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
 import android.provider.Telephony;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
-import android.speech.RecognizerIntent;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.Toast;
+
 import com.pl.app.BuildConfig;
-import com.pl.app.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,31 +47,20 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * @author wlq
+ * this class is named as CommonUtil to provide some common useful utils
  */
 public class CommonUtil {
-    public static final String TAG = "daemon";
-    public static final String ASSERTS_uninstallDaemon = "daemon";
-    // public static final String ASSERTS_uninstallDaemon= "supervisor";
-    private static String wallpaperPath = "/PhwLauncher/Phw_Wallpaper";
-    private static String shareTempPath = "/PhwLauncher/Phw_Share_Temp";
-
-    //预制配置文件的路径
-    private static final String HW_LAUNCHER_DEFAULT_WORKSPACE_FILE_PATH_local = "/hw_launcher_default_workspace.xml";
-
-    public static boolean IS_APP_UPDATE = false;
+    private static final String TAG = "daemon";
 
     /**
      * 是否是新升级的版本
@@ -137,9 +98,9 @@ public class CommonUtil {
     /**
      * 判断当前App是否已升级，包括第一次安装的情况
      *
-     * @param context
-     * @param packageName
-     * @return
+     * @param context context
+     * @param packageName name of package
+     * @return true if the app was updated
      */
     public static boolean isAppUpdated(Context context, String packageName) {
         try {
@@ -149,15 +110,8 @@ public class CommonUtil {
             int lastVersion = SharedPreferenceUtil.getInt(context,
                     SharedPreferenceUtil.VERSION_CODE, 0);
             if (currentVersion > lastVersion) {
-                // 1.2(VersionCode=4以及之前的版本文件夹没有多屏，所以升级时要将文件夹里面的
-                // 元素重新排列，1.3及以后的版本覆盖升级则不需要重新排列了。
-                if (lastVersion != 0 && lastVersion <= 4 && currentVersion >= 5) {
-                    IS_APP_UPDATE = true;
-                }
                 return true;
             }
-            LogUtil.d("uninstallDaemon", "currentVersion = " + currentVersion);
-            LogUtil.d("uninstallDaemon", "lastVersion = " + lastVersion);
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -168,8 +122,8 @@ public class CommonUtil {
     /**
      * 更新应用的当前版本号到SharedPreference中，这个方法应该只有一个地方使用
      *
-     * @param context
-     * @param packageName
+     * @param context context
+     * @param packageName name of package
      */
     public static void updateVersionCodeInSP(Context context, String packageName) {
         try {
@@ -238,17 +192,17 @@ public class CommonUtil {
     /**
      * @return true iff. the resolve info corresponds to a system application.
      */
-    private static final boolean isSystemApp(ResolveInfo res) {
+    private static boolean isSystemApp(ResolveInfo res) {
         return (res.activityInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
     }
 
     /**
      * 通过Intent判断是否为系统应用
-     *
-     * @param intent
-     * @return
+     * @param context context
+     * @param intent intent
+     * @return true if the given intent refers to a system app
      */
-    public static final boolean isSystemApp(Context context, Intent intent) {
+    public static boolean isSystemApp(Context context, Intent intent) {
         boolean result = false;
         try {
             ActivityInfo info;
@@ -266,6 +220,7 @@ public class CommonUtil {
                 }
             }
         } catch (Exception e) {
+            LogUtil.e(e);
         }
         return result;
     }
@@ -358,19 +313,15 @@ public class CommonUtil {
         List<ResolveInfo> activities = context.getPackageManager()
                 .queryIntentActivities(intent,
                         PackageManager.MATCH_DEFAULT_ONLY);
-        if (activities != null && !activities.isEmpty()) {
-            return true;
-        }
-
-        return false;
+        return activities != null && !activities.isEmpty();
     }
 
     /**
      * 判断某个应用在当前系统是否已经安装
      *
-     * @param cnt
-     * @param pkgName
-     * @return
+     * @param cnt context
+     * @param pkgName name of package
+     * @return true if the package was installed
      */
     public static boolean isPackageAlreadyInstalled(Context cnt, String pkgName) {
         boolean exist = false;
@@ -389,19 +340,16 @@ public class CommonUtil {
      * 判断某个应用在当前系统是否已经安装,不同于isPackageAlreadyInstalled（）方法，此方法只代表系统内有此内容存在，
      * 不一定应用处于可用状态
      *
-     * @param cnt
-     * @param pkgName
-     * @return
+     * @param cnt context
+     * @param pkgName name of package
+     * @return true if the application of the given {@param pkgName} exist in the device
      */
     public static boolean isApplicationExist(Context cnt, String pkgName) {
-        // boolean exist = false;
         try {
             cnt.getPackageManager().getPackageInfo(pkgName,
                     PackageManager.GET_UNINSTALLED_PACKAGES);
             return true;
         } catch (NameNotFoundException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
@@ -416,33 +364,6 @@ public class CommonUtil {
         }
 
         return paklist;
-    }
-
-    /**
-     * 通过系统邮件应用发送反馈邮件
-     *
-     * @param context context
-     * @param address e-mail address
-     * @throws NameNotFoundException
-     */
-    private static void feedbackByEmail(Context context, String address)
-            throws Exception {
-        // 必须明确使用mailto前缀来修饰邮件地址,如果使用
-        // intent.putExtra(Intent.EXTRA_EMAIL, email)，结果将匹配不到任何应用
-        Uri uri = Uri.parse("mailto:" + address);
-        Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
-        // intent.putExtra(Intent.EXTRA_CC, email); // 抄送人
-        PackageManager packageManager = context.getPackageManager();
-        PackageInfo packageInfo = packageManager.getPackageInfo(
-                context.getPackageName(), 0);
-
-//        intent.putExtra(Intent.EXTRA_SUBJECT, context.getString(
-//                R.string.feedback_subject, packageInfo.versionName,
-//                Build.VERSION.RELEASE, Build.MODEL));
-//        intent.putExtra(Intent.EXTRA_TEXT,
-//                context.getString(R.string.feedback_content)); // 正文
-//        context.startActivity(Intent.createChooser(intent,
-//                context.getString(R.string.feedback_email_chooser_title)));
     }
 
     public static void goToGp(Context context, String packageName) {
@@ -468,6 +389,7 @@ public class CommonUtil {
                     context.startActivity(intent);
                 }
             } catch (Exception e1) {
+                LogUtil.e(e);
             }
         }
     }
@@ -496,16 +418,6 @@ public class CommonUtil {
             e.printStackTrace();
         }
         return isDefault;
-    }
-
-    /**
-     * 获取当前系统版本号
-     *
-     * @return
-     */
-    public static int getSystemVersion() {
-        int version = Build.VERSION.SDK_INT;
-        return version;
     }
 
     /**
@@ -748,24 +660,6 @@ public class CommonUtil {
         return (float) Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
     }
 
-    public static String getWallpaperPath(Context context) {
-        if (Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            return Environment.getExternalStorageDirectory().getAbsolutePath()
-                    + wallpaperPath;
-        }
-        return context.getFilesDir().getAbsolutePath() + wallpaperPath;
-    }
-
-    public static String getShareTempPath(Context context) {
-        if (Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            return Environment.getExternalStorageDirectory().getAbsolutePath()
-                    + shareTempPath;
-        }
-        return context.getFilesDir().getAbsolutePath() + shareTempPath;
-    }
-
     public static byte[] Bitmap2Bytes(Bitmap bm) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         if (bm != null) {
@@ -844,21 +738,6 @@ public class CommonUtil {
     }
 
     /**
-     * 获取sd卡下的文件
-     *
-     * @param context
-     * @return
-     */
-    public static String getSDcardFilePath(Context context) {
-        if (Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            return Environment.getExternalStorageDirectory().getAbsolutePath()
-                    + HW_LAUNCHER_DEFAULT_WORKSPACE_FILE_PATH_local;
-        }
-        return null;
-    }
-
-    /**
      * 根据传入的uniqueName获取硬盘缓存的路径地址。
      */
     public static String getApkPath(Context context, String apkName) {
@@ -875,8 +754,8 @@ public class CommonUtil {
     /**
      * bitmap to drawable
      *
-     * @param drawable
-     * @return
+     * @param drawable a drawable object
+     * @return a bitmap object
      */
     public static Bitmap drawable2Bitmap(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
